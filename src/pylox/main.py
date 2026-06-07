@@ -1,18 +1,7 @@
 import sys
 from pathlib import Path
 from .scanner import Scanner
-
-had_error = False
-
-
-def report(line: int, where: str, message: str) -> None:
-    global had_error
-    print(f"[line {line}] Error {where}: {message}", file=sys.stderr)
-    had_error = True
-
-
-def error(line: int, message: str) -> None:
-    report(line, "", message)
+from . import errors
 
 
 def run(source: str) -> None:
@@ -24,23 +13,21 @@ def run(source: str) -> None:
 
 
 def run_file(path: Path) -> None:
-    global had_error
     text = path.read_text()
     run(text)
 
-    if had_error:
+    if errors.had_error:
         sys.exit(65)
 
 
 def run_prompt() -> None:
-    global had_error
     while True:
         try:
             line = input("> ")
         except EOFError:
             break
         run(line)
-        had_error = False
+        errors.reset()
 
 
 def main(args: list[str]) -> None:

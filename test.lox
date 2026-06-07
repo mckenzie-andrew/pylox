@@ -1,0 +1,4 @@
+// a comment
+var avg = (min + max) / 2;
+print "hi" + "there";
+if (avg >= 10.5) print orchid;
