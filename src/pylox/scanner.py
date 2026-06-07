@@ -116,6 +116,26 @@ class Scanner:
         text = self.source[self.start : self.current]
         self.add_token(Scanner.keywords.get(text, TokenType.IDENTIFIER))
 
+    def block_comment(self) -> None:
+        depth = 1
+        while depth > 0:
+            if self.is_at_end():
+                error(self.line, "Unterminated block comment.")
+                return
+
+            if self.peek() == "/" and self.peek_next() == "*":
+                self.advance()
+                self.advance()
+                depth += 1
+            elif self.peek() == "*" and self.peek_next() == "/":
+                self.advance()
+                self.advance()
+                depth -= 1
+            else:
+                if self.peek() == "\n":
+                    self.line += 1
+                self.advance()
+
     def scan_token(self) -> None:
         c = self.advance()
 
@@ -160,6 +180,8 @@ class Scanner:
                 if self.match("/"):
                     while self.peek() != "\n" and not self.is_at_end():
                         self.advance()
+                elif self.match("*"):
+                    self.block_comment()
                 else:
                     self.add_token(TokenType.SLASH)
             case " " | "\r" | "\t":
