@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 from .scanner import Scanner
+from .parser import Parser
+from .ast_printer import print_ast
 from . import errors
 
 
@@ -8,8 +10,13 @@ def run(source: str) -> None:
     scanner = Scanner(source)
     tokens = scanner.scan_tokens()
 
-    for token in tokens:
-        print(token)
+    parser = Parser(tokens)
+    expression = parser.parse()
+
+    if errors.had_error or expression is None:
+        return
+    
+    print(print_ast(expression))
 
 
 def run_file(path: Path) -> None:
