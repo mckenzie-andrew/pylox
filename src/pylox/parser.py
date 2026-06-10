@@ -1,7 +1,7 @@
 from .tokens import Token, TokenType
 from .expr import Expr, Binary, Unary, Literal, Grouping
 from .errors import ParseError, error_token
-
+from .stmt import Stmt, Print, Expression
 
 class Parser:
     def __init__(self, tokens: list[Token], current: int = 0) -> None:
@@ -143,8 +143,30 @@ class Parser:
 
             self.advance()
 
-    def parse(self) -> Expr | None:
-        try:
-            return self.expression()
-        except ParseError:
-            return
+
+    def statement(self) -> Stmt:
+        if self.match(TokenType.PRINT):
+            return self.print_statement()
+        
+        return self.expression_statement()
+
+
+    def parse(self) -> list[Stmt]:
+        statements: list[Stmt] = []
+        while not self.is_at_end():
+            statements.append(self.statement())
+        return statements    
+    
+
+    def print_statement(self) -> Stmt:
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+        return Print(value)
+    
+
+    def expression_statement(self) -> Stmt:
+        expr = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
+        return Expression(expr)
+    
+    

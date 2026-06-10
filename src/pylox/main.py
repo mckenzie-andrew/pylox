@@ -4,18 +4,19 @@ from .scanner import Scanner
 from .parser import Parser
 from .interpreter import interpret
 from . import errors
+from .stmt import Stmt
 
 
 def run(source: str) -> None:
     scanner = Scanner(source)
     tokens = scanner.scan_tokens()
     parser = Parser(tokens)
-    expression = parser.parse()
+    statements: list[Stmt] = parser.parse()
 
-    if errors.had_error or expression is None:
+    if errors.had_error:
         return
 
-    interpret(expression)
+    interpret(statements)
 
 
 def run_file(path: Path) -> None:

@@ -2,7 +2,7 @@ from .expr import Expr, Binary, Unary, Grouping, Literal
 from .tokens import Token, TokenType
 from .errors import LoxRuntimeError, runtime_error
 from typing import assert_never
-
+from .stmt import Stmt, Print, Expression
 
 def is_truthy(value: object) -> bool:
     if value is None:
@@ -118,9 +118,20 @@ def evaluate(expr: Expr) -> object:
             assert_never(expr)
 
 
-def interpret(expr: Expr) -> None:
+def execute(stmt: Stmt) -> None:
+    match stmt:
+        case Print(expression=expr):
+            value = evaluate(expr)
+            print(stringify(value))
+        case Expression(expression=expr):
+            evaluate(expr)
+        case _:
+            assert_never(stmt)
+
+
+def interpret(statements: list[Stmt]) -> None:
     try:
-        value = evaluate(expr)
-        print(stringify(value))
+        for statement in statements:
+            execute(statement)
     except LoxRuntimeError as err:
         runtime_error(err)
