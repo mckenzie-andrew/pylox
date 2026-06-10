@@ -2,21 +2,20 @@ import sys
 from pathlib import Path
 from .scanner import Scanner
 from .parser import Parser
-from .ast_printer import print_ast
+from .interpreter import interpret
 from . import errors
 
 
 def run(source: str) -> None:
     scanner = Scanner(source)
     tokens = scanner.scan_tokens()
-
     parser = Parser(tokens)
     expression = parser.parse()
 
     if errors.had_error or expression is None:
         return
-    
-    print(print_ast(expression))
+
+    interpret(expression)
 
 
 def run_file(path: Path) -> None:
@@ -25,6 +24,9 @@ def run_file(path: Path) -> None:
 
     if errors.had_error:
         sys.exit(65)
+
+    if errors.had_runtime_error:
+        sys.exit(70)
 
 
 def run_prompt() -> None:

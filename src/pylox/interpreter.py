@@ -1,11 +1,7 @@
 from .expr import Expr, Binary, Unary, Grouping, Literal
 from .tokens import Token, TokenType
-from .errors import LoxRuntimeError
+from .errors import LoxRuntimeError, runtime_error
 from typing import assert_never
-
-
-def interpret(expr: Expr) -> object:
-    return evaluate(expr)
 
 
 def is_truthy(value: object) -> bool:
@@ -24,6 +20,19 @@ def is_equal(a: object, b: object) -> bool:
     if isinstance(a, bool) != isinstance(b, bool):
         return False
     return a == b
+
+
+def stringify(value: object) -> str:
+    if value is None:
+        return "nil"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, float):
+        text = str(value)
+        if text.endswith(".0"):
+            text = text[:-2]
+        return text
+    return str(value)
 
 
 def check_number_operand(op: Token, operand: object) -> None:
@@ -98,10 +107,20 @@ def evaluate(expr: Expr) -> object:
                 case TokenType.BANG:
                     return not is_truthy(right)
                 case _:
-                    raise LoxRuntimeError(op, f"Unsupported unary operator '{op.lexeme}'.")
+                    raise LoxRuntimeError(
+                        op, f"Unsupported unary operator '{op.lexeme}'."
+                    )
         case Binary(left=l, operator=op, right=r):
             left = evaluate(l)
             right = evaluate(r)
             return evaluate_binary(op, left, right)
         case _:
             assert_never(expr)
+
+
+def interpret(expr: Expr) -> None:
+    try:
+        value = evaluate(expr)
+        print(stringify(value))
+    except LoxRuntimeError as err:
+        runtime_error(err)
